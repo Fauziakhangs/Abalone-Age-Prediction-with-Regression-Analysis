@@ -1,0 +1,342 @@
+---
+title: "DSCProject"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-10-25"
+---
+
+
+```{r}
+library(tidyverse)
+library(psych)
+library(QuantPsyc)
+library(car)
+library(DAAG)
+library(bootstrap)
+```
+```{r}
+abalone = read.table("abalone.data", header=F, sep=",")
+colnames(abalone) <- c('sex', 'length', 'diameter', 'height', 'whole_weight', 'shucked_weight', 'viscera_weight', 'shell_weight', 'rings')
+```
+
+```{r}
+#Checking the distribution of our target variable
+hist(abalone$rings)
+hist(sqrt(abalone$rings))
+hist(log(abalone$rings))
+#We see that our distribution is almost symmetric. Sqrt conversion of Rings makes the data symmetric. Likely indicates that we will be converting all of our variables using sqrt.
+```
+
+
+
+```{r}
+#Dataframe Setup
+male = (abalone$sex=="M")*1
+female = (abalone$sex=="F")*1
+set.seed(891)
+abaloneDummy = cbind(abalone[,2:9], male, female)
+cor(abaloneDummy, method = "pearson")
+```
+```{r}
+#Pairs matrix
+pairs(~rings + length + diameter + height + whole_weight + shucked_weight + viscera_weight + shell_weight + male + female ,data=abaloneDummy, main="Simple Scatterplot Matrix")
+```
+```{r}
+#Base Scatter Plots
+plot(abaloneDummy$length, abaloneDummy$rings, main = "Scatterplot of length vs rings")
+plot(abaloneDummy$diameter, abaloneDummy$rings, main = "Scatterplot of diameter vs rings")
+plot(abaloneDummy$height, abaloneDummy$rings, main = "Scatterplot of height vs rings")
+plot(abaloneDummy$whole_weight, abaloneDummy$rings, main = "Scatterplot of whole_weight vs rings")
+plot(abaloneDummy$shucked_weight, abaloneDummy$rings, main = "Scatterplot of shucked_weight vs rings")
+plot(abaloneDummy$viscera_weight, abaloneDummy$rings, main = "Scatterplot of viscera_weight vs rings")
+plot(abaloneDummy$shell_weight, abaloneDummy$rings, main = "Scatterplot of shell_weight vs rings")
+#The plots look to mostly follow a square root function/pattern.
+```
+```{r}
+#Square Root Conversion on X Vars
+plot(sqrt(abaloneDummy$length), abaloneDummy$rings, main = "Scatterplot of sqrt(length) vs rings")
+plot(sqrt(abaloneDummy$diameter), abaloneDummy$rings, main = "Scatterplot of sqrt(diameter) vs rings")
+plot(sqrt(abaloneDummy$height), abaloneDummy$rings, main = "Scatterplot of sqrt(height) vs rings")
+plot(sqrt(abaloneDummy$whole_weight), abaloneDummy$rings, main = "Scatterplot of sqrt(whole_weight) vs rings")
+plot(sqrt(abaloneDummy$shucked_weight), abaloneDummy$rings, main = "Scatterplot of sqrt(shucked_weight) vs rings")
+plot(sqrt(abaloneDummy$viscera_weight), abaloneDummy$rings, main = "Scatterplot of sqrt(viscera_weight) vs rings")
+plot(sqrt(abaloneDummy$shell_weight), abaloneDummy$rings, main = "Scatterplot of sqrt(shell_weight) vs rings")
+```
+```{r}
+#Scatter plots with square Root Conversion on all variables
+plot(sqrt(abaloneDummy$length), sqrt(abaloneDummy$rings), main = "Scatterplot of Sqrt(length) vs Sqrt(rings)")
+plot(sqrt(abaloneDummy$diameter), sqrt(abaloneDummy$rings), main = "Scatterplot of Sqrt(diameter) vs Sqrt(rings)")
+plot(sqrt(abaloneDummy$height), sqrt(abaloneDummy$rings), main = "Scatterplot of Sqrt(height) vs Sqrt(rings)")
+plot(sqrt(abaloneDummy$whole_weight), sqrt(abaloneDummy$rings), main = "Scatterplot of Sqrt(whole_weight) vs Sqrt(rings)")
+plot(sqrt(abaloneDummy$shucked_weight), sqrt(abaloneDummy$rings), main = "Scatterplot of Sqrt(shucked_weight) vs Sqrt(rings)")
+plot(sqrt(abaloneDummy$viscera_weight), sqrt(abaloneDummy$rings), main = "Scatterplot of Sqrt(viscera_weight) vs Sqrt(rings)")
+plot(sqrt(abaloneDummy$shell_weight), sqrt(abaloneDummy$rings), main = "Scatterplot of Sqrt(shell_weight) vs Sqrt(rings)")
+```
+```{r}
+#Log Conversion on X Vars
+plot(log(abaloneDummy$length), abaloneDummy$rings, main = "Scatterplot of log(length) vs rings")
+plot(log(abaloneDummy$diameter), abaloneDummy$rings, main = "Scatterplot of log(diameter) vs rings")
+plot(log(abaloneDummy$height), abaloneDummy$rings, main = "Scatterplot of log(height) vs rings")
+plot(log(abaloneDummy$whole_weight), abaloneDummy$rings, main = "Scatterplot of log(whole_weight) vs rings")
+plot(log(abaloneDummy$shucked_weight), abaloneDummy$rings, main = "Scatterplot of log(whole_weight) vs rings")
+plot(log(abaloneDummy$viscera_weight), abaloneDummy$rings, main = "Scatterplot of log(viscera_weight) vs rings")
+plot(log(abaloneDummy$shell_weight), abaloneDummy$rings, main = "Scatterplot of log(shell_weight) vs rings")
+```
+```{r}
+#Log Conversion on all variables
+plot(log(abaloneDummy$length), log(abaloneDummy$rings), main = "Scatterplot of log(length) vs log(rings)")
+plot(log(abaloneDummy$diameter), log(abaloneDummy$rings), main = "Scatterplot of log(diameter) vs log(rings)")
+plot(log(abaloneDummy$height), log(abaloneDummy$rings), main = "Scatterplot of log(height) vs log(rings)")
+plot(log(abaloneDummy$whole_weight), log(abaloneDummy$rings), main = "Scatterplot of log(whole_weight) vs log(rings)")
+plot(log(abaloneDummy$shucked_weight), log(abaloneDummy$rings), main = "Scatterplot of log(shucked_weight) vs log(rings)")
+plot(log(abaloneDummy$viscera_weight), log(abaloneDummy$rings), main = "Scatterplot of log(viscera_weight) vs log(rings)")
+plot(log(abaloneDummy$shell_weight), log(abaloneDummy$rings), main = "Scatterplot of log(shell_weight) vs log(rings)")
+```
+
+
+```{r}
+#Performing log conversion on X Vars in Dataset
+abaloneLogX = abaloneDummy
+abaloneLogX$length = log(abaloneLogX$length)
+abaloneLogX$diameter = log(abaloneLogX$diameter)
+abaloneLogX$height = log(abaloneLogX$height)
+abaloneLogX$whole_weight = log(abaloneLogX$whole_weight)
+abaloneLogX$shucked_weight = log(abaloneLogX$shucked_weight)
+abaloneLogX$viscera_weight = log(abaloneLogX$viscera_weight)
+abaloneLogX$shell_weight = log(abaloneLogX$shell_weight)
+cor(abaloneLogX, method = "pearson")
+```
+
+```{r}
+#Performing log conversion on all Vars in Dataset
+abaloneLogAll = abaloneLogX
+abaloneLogAll$rings = log(abaloneLogAll$rings)
+cor(abaloneLogX, method = "pearson")
+```
+
+```{r}
+#Setting up Multiple Linear Regression of Log transformation model to check if the model has a better Adj R-Squared compared to the square root model
+logfit1 = lm (rings ~ (length+diameter+whole_weight+shucked_weight+viscera_weight+shell_weight+male+female), data=abaloneLogX)
+summary(logfit1)
+vif(logfit1)
+plot( fitted(logfit1), rstandard(logfit1), main="Predicted vs residuals plot for Square Root Conversion X Model")
+abline(a=0, b=0, col='red')
+qqnorm(rstandard(logfit1))
+qqline(rstandard(logfit1), col = 2)
+plot(rstudent(logfit1)~hatvalues(logfit1))
+```
+
+
+
+```{r}
+#Sqrt Conversion of X Variables in Dataset
+abaloneSqrtX = abaloneDummy
+abaloneSqrtX$length = sqrt(abaloneSqrtX$length)
+abaloneSqrtX$diameter = sqrt(abaloneSqrtX$diameter)
+abaloneSqrtX$height = sqrt(abaloneSqrtX$height)
+abaloneSqrtX$whole_weight = sqrt(abaloneSqrtX$whole_weight)
+abaloneSqrtX$shucked_weight = sqrt(abaloneSqrtX$shucked_weight)
+abaloneSqrtX$viscera_weight = sqrt(abaloneSqrtX$viscera_weight)
+abaloneSqrtX$shell_weight = sqrt(abaloneSqrtX$shell_weight)
+cor(abaloneSqrtX, method = "pearson")
+```
+
+```{r}
+#Setting up the original model and checking for outliers/assumptions using dataframe with Square Root Conversions on X Variables.
+sqrtfit1 = lm (rings ~ (length+diameter+height+whole_weight+shucked_weight+viscera_weight+shell_weight+male+female), data=abaloneSqrtX)
+summary(sqrtfit1)
+vif(sqrtfit1)
+plot( fitted(sqrtfit1), rstandard(sqrtfit1), main="Predicted vs residuals plot for Square Root Conversion X Model")
+abline(a=0, b=0, col='red')
+qqnorm(rstandard(sqrtfit1))
+qqline(rstandard(sqrtfit1), col = 2)
+plot(rstudent(sqrtfit1)~hatvalues(sqrtfit1))
+```
+
+```{r}
+#Interaction Terms of model using Square Root Conversion of X Vars
+fullFitX = lm(rings ~ (length+diameter+height+whole_weight+shucked_weight+viscera_weight+shell_weight+male+female)^2, data=abaloneSqrtX)
+summary(fullFitX)
+vif(fullFitX)
+plot( fitted(fullFitX), rstandard(fullFitX), main="Predicted vs residuals plot for Interaction Terms of Sqrt Conversion X Model")
+abline(a=0, b=0, col='red')
+qqnorm(rstandard(fullFitX))
+qqline(rstandard(fullFitX), col = 2)
+plot(rstudent(fullFitX)~hatvalues(fullFitX))
+```
+```{r}
+#Sqrt Conversion of Rings to see which models have better Adj R^2
+abaloneSqrtAll = abaloneSqrtX
+abaloneSqrtAll$rings = sqrt(abaloneSqrtAll$rings)
+cor(abaloneSqrtAll, method = "pearson")
+sqAllFit1 = lm (rings ~ (length+diameter+height+whole_weight+shucked_weight+viscera_weight+shell_weight+male+female), data=abaloneSqrtAll)
+cor(abaloneSqrtX, method = "pearson")
+summary(sqAllFit1)
+vif(sqAllFit1)
+```
+
+
+```{r}
+#Setting up Multiple Linear Regression of Log transformation model to check if the model has a better Adj R-Squared compared to the square root model
+logfit1 = lm (rings ~ (length+diameter+whole_weight+shucked_weight+viscera_weight+shell_weight+male+female), data=abaloneLogX)
+summary(logfit1)
+logInt1 = lm (rings ~ (length+diameter+whole_weight+shucked_weight+viscera_weight+shell_weight+male+female)^2, data=abaloneLogX)
+summary(logInt1)
+vif(logfit1)
+#All 4 log trnasofmriaton models have lower Adjusted R-Squared compared to the model using Square Root transformation on all variables.
+```
+
+```{r}
+summary(sqAllFit1)
+vif(sqAllFit1)
+plot( fitted(sqAllFit1), rstandard(sqAllFit1), main="Predicted vs residuals plot for Square Root Conversion Model M1")
+abline(a=0, b=0, col='red')
+qqnorm(rstandard(sqAllFit1))
+qqline(rstandard(sqAllFit1), col = 2)
+influence.measures(sqAllFit1)
+summary(influence.measures(sqAllFit1))
+plot(rstudent(sqAllFit1)~hatvalues(sqAllFit1))
+#Sqrt conversion of x and y vars results in a better Adj R^2. Model will be used going forward.
+```
+```{r}
+#Interaction Model of SqrtAll Model
+fullFitAll = lm (rings ~ (length+diameter+height+whole_weight+shucked_weight+viscera_weight+shell_weight+male+female)^2, data=abaloneSqrtAll)
+summary(fullFitAll)
+plot( fitted(fullFitAll), rstandard(fullFitAll), main="Predicted vs residuals plot for Sqrt Converted X,Y Interaction Model M2")
+abline(a=0, b=0, col='red')
+qqnorm(rstandard(fullFitAll))
+qqline(rstandard(fullFitAll), col = 2)
+plot(rstudent(fullFitAll)~hatvalues(fullFitAll))
+#Model using data with x and y vars sqrt converted selected due to higher Adj R^2. Interaction terms check performed.
+#Setting up Cross Validation of this model.
+```
+```{r}
+influence = influence.measures(fullFitAll)
+summary(influence)
+```
+
+```{r}
+#Remove Influential Points from Square Root All Model
+abaloneSqrtAllInfluence = abaloneSqrtAll[-c(1,10, 32, 33, 34, 37, 47, 73, 76, 82, 86, 110, 129, 130, 150, 158, 160, 164, 165),]
+InfFit1 = lm (rings ~ (length+diameter+height+whole_weight+shucked_weight+viscera_weight+shell_weight+male+female)^2, data=abaloneSqrtAllInfluence)
+summary(InfFit1)
+#Removal of Influential Points does not resu lt in a significant gain in Adj R^2. As such the points are being kept
+```
+
+```{r}
+#Backward Selection of Interference SqrtAll
+fullFitAll.bward = step(fullFitAll, direction = "backward", trace=TRUE )
+#Selected below due to highest AIC
+#Step:  AIC=-9920.62
+#rings ~ length + diameter + height + whole_weight + shucked_weight + 
+#    viscera_weight + shell_weight + male + female + length:diameter + 
+#    length:shucked_weight + length:viscera_weight + length:shell_weight + 
+#    length:male + diameter:viscera_weight + diameter:female + 
+#    height:whole_weight + height:shucked_weight + height:viscera_weight + 
+#    height:shell_weight + whole_weight:shucked_weight + whole_weight:shell_weight + 
+#    whole_weight:male + shucked_weight:viscera_weight + shucked_weight:shell_weight + 
+#    shucked_weight:male + shucked_weight:female + viscera_weight:male
+
+```
+```{r}
+#Forward Selection of Interference SqrtAll
+fullFitAll.fward = step(fullFitAll, direction = "forward", trace=TRUE )
+#Forward Selection Selects full model.
+#Start:  AIC=-9897.76
+#rings ~ (length + diameter + height + whole_weight + shucked_weight + 
+#    viscera_weight + shell_weight + male + female)^2
+```
+```{r}
+#Stepwise Selection of Interference SqrtAll
+fullFitAll.step = step(fullFitAll, direction="both", k=9)
+#Model Selected is below
+#Step:  AIC=-9780.03
+#rings ~ length + diameter + height + whole_weight + shucked_weight + 
+#    viscera_weight + shell_weight + male + female + length:viscera_weight + 
+#    length:male + diameter:female + height:shucked_weight + height:shell_weight + 
+#    whole_weight:shucked_weight + shucked_weight:shell_weight + 
+#    shucked_weight:male + shucked_weight:female
+```
+
+
+
+```{r}
+summary(fullFitAll)
+#Forwards Selection Model (*Full Model) from Interaction Terms model measures
+resultsFull = cv.lm(data=abaloneSqrtAll, form.lm=fullFitAll, m= 5, plotit = F) # 5-fold cross-validation 
+head(resultsFull)
+rmse_cvFull <- sqrt((resultsFull$rings - resultsFull$cvpred)%*%(resultsFull$rings - resultsFull$cvpred)/nrow(resultsFull))
+rmse_cvFull
+mae_cvFull <- mean(abs(resultsFull$rings - resultsFull$cvpred))
+mae_cvFull
+mape_cvFull <- mean(abs((resultsFull$rings - resultsFull$cvpred)/resultsFull$rings))*100
+mape_cvFull
+```
+
+```{r}
+#Backwards Selection of Interaction Terms Model from dataset with SquareRoot Conversion on both X and Y vars
+fullFitAllBW = lm(rings ~ length + diameter + height + whole_weight + shucked_weight + viscera_weight + shell_weight + male + female + length:diameter + length:shucked_weight + length:viscera_weight + length:shell_weight + length:male + diameter:viscera_weight + diameter:female + height:whole_weight + height:shucked_weight + height:viscera_weight + height:shell_weight + whole_weight:shucked_weight + whole_weight:shell_weight + whole_weight:male + shucked_weight:viscera_weight + shucked_weight:shell_weight + shucked_weight:male + shucked_weight:female + viscera_weight:male, data=abaloneSqrtAll)
+summary(fullFitAllBW)
+vif(fullFitAllBW)
+plot( fitted(fullFitAllBW), rstandard(fullFitAllBW), main="Predicted vs residuals plot for Square Root Conversion X Model")
+abline(a=0, b=0, col='red')
+qqnorm(rstandard(fullFitAllBW))
+qqline(rstandard(fullFitAllBW), col = 2)
+plot(rstudent(fullFitAllBW)~hatvalues(fullFitAllBW))
+```
+
+
+```{r}
+#Setting up Cross Validation of fullFitAllBW
+resultsBW = cv.lm(data=abaloneSqrtAll, form.lm=fullFitAllBW, m= 5, plotit = F) # 5-fold cross-validation 
+head(resultsBW)
+# Root Mean Squared Error (RMSE)  value
+rmse_cvBW <- sqrt((resultsBW$rings - resultsBW$cvpred)%*%(resultsBW$rings - resultsBW$cvpred)/nrow(resultsBW))
+rmse_cvBW
+mae_cvBW <- mean(abs(resultsBW$rings - resultsBW$cvpred))
+mae_cvBW
+mape_cvBW <- mean(abs((resultsBW$rings - resultsBW$cvpred)/resultsBW$rings))*100
+mape_cvBW
+```
+```{r}
+#Stepwise Selection of Interaction Model using Square root conversion on all variables
+fullFitAllSW = lm(rings ~ length + diameter + height + whole_weight + shucked_weight + viscera_weight + shell_weight + male + female + length:viscera_weight + length:male + diameter:female + height:shucked_weight + height:shell_weight + whole_weight:shucked_weight + shucked_weight:shell_weight + shucked_weight:male + shucked_weight:female, data=abaloneSqrtAll)
+summary(fullFitAllSW)
+vif(fullFitAllSW)
+plot( fitted(fullFitAllSW), rstandard(fullFitAllSW), main="Predicted vs residuals plot for Square Root Conversion X Model")
+abline(a=0, b=0, col='red')
+qqnorm(rstandard(fullFitAllSW))
+qqline(rstandard(fullFitAllSW), col = 2)
+plot(rstudent(fullFitAllSW)~hatvalues(fullFitAllSW))
+```
+
+
+```{r}
+#Setting up Cross Validation of this fullFitAllSW
+resultsSW = cv.lm(data=abaloneSqrtAll, form.lm=fullFitAllSW, m= 5, plotit = F) # 5-fold cross-validation 
+head(resultsSW)
+# Root Mean Squared Error (RMSE)  value
+rmse_cvSW <- sqrt((resultsSW$rings - resultsSW$cvpred)%*%(resultsSW$rings - resultsSW$cvpred)/nrow(resultsSW))
+rmse_cvSW
+mae_cvSW <- mean(abs(resultsSW$rings - resultsSW$cvpred))
+mae_cvSW
+mape_cvSW <- mean(abs((resultsSW$rings - resultsSW$cvpred)/resultsSW$rings))*100
+mape_cvSW
+```
+
+
+
+```{r}
+#Comparing Validation Measures between the 3 models
+rmse_cvFull
+mae_cvFull
+mape_cvFull
+rmse_cvBW
+mae_cvBW
+mape_cvBW
+rmse_cvSW
+mae_cvSW
+mape_cvSW
+#Based on validaton metrics of the 3 models, the stepwise selection model is the best. Full model/forward = 0.6227, Backward = 0.6233  Stepwise Selection = 0.6217  
+```
