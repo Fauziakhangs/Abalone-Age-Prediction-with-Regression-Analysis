@@ -1,21 +1,21 @@
 # Data-Analysis & Regression
-## Abalone Age Prediction with Regression Analysis
 
 **📌 Overview**
 
 In this project, I aimed to predict the age of abalones based on physical attributes like shell size and weight. Using R 🖥️, Tidyverse 📊, and ggplot2 📉, I performed data cleaning, exploratory data analysis (EDA) 🔍, and built regression models to predict the target variable (age). Key insights were visualized, revealing significant patterns in the data. The outcome was a predictive model that effectively estimates abalone age, supported by clear and impactful visualizations.
 
-
 **🧠 My Approach**
 
 I used real-world data about abalones, like their weight, size, and even whether they were male, female, or young. I also looked at how these features were connected to their age. Some measurements didn’t follow a clear pattern, so I transformed the data to make it easier to work with. Then, I built a model that could learn from the data and make age predictions without needing a microscope.
 
-![image](https://github.com/Fauziakhangs/Data-Analysis/blob/673dabbdff6f06e63812e1a8d16f6ec77a30fe07/Abalone.png)
-
+![image](https://github.com/Fauziakhangs/Data-Analysis/blob/36f0288dcfc02225109123f01429ff1e84df79a6/Abalone_Age.png)
 
 **🛠️ Tools & Techniques**
 
 I used a software tool called R, which helps analyze data and create models. I tested different ways of preparing the data and picked the method that gave the best results. To check how well my model was doing, I used a process called cross-validation, which helps make sure the predictions are reliable even on new data.
+
+![image](https://github.com/Fauziakhangs/Data-Analysis/blob/673dabbdff6f06e63812e1a8d16f6ec77a30fe07/Abalone.png)
+
 
 **📈 Outcome**
 
