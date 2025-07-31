@@ -6,7 +6,7 @@ In this project, I aimed to predict the age of abalones based on physical attrib
 
 **🧠 My Approach**
 
-I used real-world data about abalones, like their weight, size, and even whether they were male, female, or young. I also looked at how these features were connected to their age. Some measurements didn’t follow a clear pattern, so I transformed the data to make it easier to work with. Then, I built a model that could learn from the data and make age predictions without needing a microscope.
+I used real-world data about abalones, like their weight, size, and even whether they were male, female, or young. I also looked at how these features were connected to their age. Some measurements didn’t follow a clear pattern, so I transformed the data to make it easier to work with. Then, I built a model that could learn from the data and make age preictions without needing a microscope.
 
 ![image](https://github.com/Fauziakhangs/Data-Analysis/blob/9679cb0a23a93df6674bfff08ad237129720dbe8/Abalone_Age.png)
 
